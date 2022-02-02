@@ -1,197 +1,247 @@
 #include <iostream>
+#include "BinaryTree.h"
+#include <ctime>
 
-struct Node 
-{
-	int Value;
-	Node* Left;
-	Node* Right;
-};
-
-class BinaryTree 
-{
-public:
-	BinaryTree();
-	~BinaryTree();
-	void Insert(int Key);
-	Node* Search(int Key);
-	void DestroyTree();
-	void InorderTree();
-	void PostorderPrint();
-	void PreorderPrint();
-	void DestroyTree(Node* Leaf);
-	void Insert(int Key, Node* Leaf);
-	Node* Search(int Key, Node* Leaf);
-	void InorderTree(Node* Leaf);
-	void PostorderPrint(Node* Leaf);
-	void PreorderPrint(Node* Leaf);
-
-private:
-	Node* Root;
-};
-
-
-BinaryTree::BinaryTree() 
+UBinaryTree::UBinaryTree()
 {
 	Root = nullptr;
 }
 
-BinaryTree::~BinaryTree() 
+UBinaryTree::~UBinaryTree()
 {
-	DestroyTree();
+	Remove(0);
 }
 
-void BinaryTree::DestroyTree(Node* Leaf) 
+FNode* UBinaryTree::Insert(FNode* AddNode, int Key)
 {
-	if (Leaf != nullptr) {
-		DestroyTree(Leaf->Left);
-		DestroyTree(Leaf->Right);
-		delete Leaf;
+	if (AddNode == nullptr)
+	{
+		AddNode = new FNode;
+		AddNode->Key = Key;
+		AddNode->Left = nullptr;
+		AddNode->Right = nullptr;
+		AddNode->Parent = nullptr;
+	}
+	else if (AddNode->Key < Key)
+	{
+		AddNode->Right = Insert(AddNode->Right, Key);
+		AddNode->Right->Parent = AddNode;
+	}
+	else
+	{
+		AddNode->Left = Insert(AddNode->Left, Key);
+		AddNode->Left->Parent = AddNode;
+	}
+	return AddNode;
+}
+
+void UBinaryTree::Insert(int Key)
+{
+	Root = Insert(Root, Key);
+}
+
+void UBinaryTree::PrintTreeInOrder(FNode* AddNode)
+{
+	if (AddNode == nullptr)
+	{
+		return;
+	}
+	PrintTreeInOrder(AddNode->Left);
+	std::cout << AddNode->Key << " ";
+	PrintTreeInOrder(AddNode->Right);
+}
+
+void UBinaryTree::PrintTreeInOrder()
+{
+	PrintTreeInOrder(Root);
+	std::cout << std::endl;
+}
+
+FNode* UBinaryTree::Search(FNode* AddNode, int Key)
+{
+	if (AddNode == nullptr)
+	{
+		return nullptr;
+	}
+	else if (AddNode->Key == Key)
+	{
+		return AddNode;
+	}
+	else if (AddNode->Key < Key)
+	{
+		return Search(AddNode->Right, Key);
+	}
+	else
+	{
+		return Search(AddNode->Left, Key);
 	}
 }
 
-void BinaryTree::Insert(int Key, Node* Leaf) 
+bool UBinaryTree::Search(int Key)
 {
+	FNode* result = Search(Root, Key);
+	return result == nullptr ? false : true;
+}
 
-	if (Key < Leaf->Value) {
-		if (Leaf->Left != nullptr) 
+int UBinaryTree::FindMin(FNode* AddNode)
+{
+	if (AddNode == nullptr)
+	{
+		return -1;
+	}
+	else if (AddNode->Left == nullptr)
+	{
+		return AddNode->Key;
+	}
+	else
+	{
+		return FindMin(AddNode->Left);
+	}
+}
+
+int UBinaryTree::FindMin()
+{
+	return FindMin(Root);
+}
+
+int UBinaryTree::FindMax(FNode* AddNode)
+{
+	if (AddNode == nullptr)
+	{
+		return -1;
+	}
+	else if (AddNode->Right == nullptr)
+	{
+		return AddNode->Key;
+	}
+	else
+	{
+		return FindMax(AddNode->Right);
+	}
+}
+
+int UBinaryTree::FindMax()
+{
+	return FindMax(Root);
+}
+
+int UBinaryTree::Successor(FNode* AddNode)
+{
+	if (AddNode->Right != nullptr)
+	{
+		return FindMin(AddNode->Right);
+	}
+	else
+	{
+		FNode* ParentNode = AddNode->Parent;
+		FNode* CurrentNode = AddNode;
+
+		while ((ParentNode != nullptr) && (CurrentNode == ParentNode->Right))
 		{
-			Insert(Key, Leaf->Left);
+			CurrentNode = ParentNode;
+			ParentNode = CurrentNode->Parent;
 		}
-		else 
+		return ParentNode == nullptr ? -1 :	ParentNode->Key;
+	}
+}
+
+int UBinaryTree::Successor(int Key)
+{
+	FNode* KeyNode = Search(Root, Key);
+	return KeyNode == nullptr ? -1 : Successor(KeyNode);
+}
+
+int UBinaryTree::Predecessor(FNode* AddNode)
+{
+	if (AddNode->Left != nullptr)
+	{
+		return FindMax(AddNode->Left);
+	}
+	else
+	{
+		FNode* ParentNode = AddNode->Parent;
+		FNode* CurrentNode = AddNode;
+
+		while ((ParentNode != nullptr) && (CurrentNode == ParentNode->Left))
 		{
-			Leaf->Left = new Node;
-			Leaf->Left->Value = Key;
-			Leaf->Left->Left = nullptr;
-			Leaf->Left->Right = nullptr;
+			CurrentNode = ParentNode;
+			ParentNode = CurrentNode->Parent;
 		}
+		return ParentNode == nullptr ? -1 : ParentNode->Key;
 	}
-	else if (Key >= Leaf->Value) 
+}
+
+int UBinaryTree::Predecessor(int Key)
+{
+	FNode* KeyNode = Search(Root, Key);
+	return KeyNode == nullptr ? -1 : Predecessor(KeyNode);
+}
+
+FNode* UBinaryTree::Remove(FNode* AddNode, int Key)
+{
+	if (AddNode == nullptr)
 	{
-		if (Leaf->Right != nullptr) 
+		return nullptr;
+	}
+	if (AddNode->Key == Key)
+	{
+		if (AddNode->Left == nullptr && AddNode->Right == nullptr)
 		{
-			Insert(Key, Leaf->Right);
+			AddNode = nullptr;
 		}
-		else 
+		else if (AddNode->Left == nullptr && AddNode->Right != nullptr)
 		{
-			Leaf->Right = new Node;
-			Leaf->Right->Value = Key;
-			Leaf->Right->Right = nullptr;
-			Leaf->Right->Left = nullptr;
+			AddNode->Right->Parent = AddNode->Parent;
+			AddNode = AddNode->Right;
 		}
-	}
-
-}
-
-void BinaryTree::Insert(int Key) 
-{
-	if (Root != nullptr) 
-	{
-		Insert(Key, Root);
-	}
-	else 
-	{
-		Root = new Node;
-		Root->Value = Key;
-		Root->Left = nullptr;
-		Root->Right = nullptr;
-	}
-}
-
-Node* BinaryTree::Search(int Key, Node* Leaf) 
-{
-	if (Leaf != nullptr) 
-	{
-		if (Key == Leaf->Value) 
+		else if (AddNode->Left != nullptr && AddNode->Right == nullptr)
 		{
-			return Leaf;
+			AddNode->Left->Parent = AddNode->Parent;
+			AddNode = AddNode->Left;
 		}
-		if (Key < Leaf->Value) 
+		else
 		{
-			return Search(Key, Leaf->Left);
-		}
-		else 
-		{
-			return Search(Key, Leaf->Right);
+			int SuccessorKey = Successor(Key);
+			AddNode->Key = SuccessorKey;
+			AddNode->Right = Remove(AddNode->Right, SuccessorKey);
 		}
 	}
-	else 
+	else if (AddNode->Key < Key)
 	{
-		return 0;
+		AddNode->Right = Remove(AddNode->Right, Key);
 	}
-}
-
-Node* BinaryTree::Search(int Key) 
-{
-	return Search(Key, Root);
-}
-
-void BinaryTree::DestroyTree() 
-{
-	DestroyTree(Root);
-}
-
-void BinaryTree::InorderTree() 
-{
-	InorderTree(Root);
-	std::cout << "\n";
-}
-
-void BinaryTree::InorderTree(Node* Leaf) {
-	if (Leaf != nullptr) 
+	else
 	{
-		InorderTree(Leaf->Left);
-		std::cout << Leaf->Value << ",";
-		InorderTree(Leaf->Right);
+		AddNode->Left = Remove(AddNode->Left, Key);
 	}
+	return AddNode;
 }
 
-void BinaryTree::PostorderPrint() 
+void UBinaryTree::Remove(int Key)
 {
-	PostorderPrint(Root);
-	std::cout << "\n";
+	Root = Remove(Root, Key);
 }
 
-void BinaryTree::PostorderPrint(Node* Leaf) 
+void UBinaryTree::TestAddValueAndTime(FNode* Root)
 {
-	if (Leaf != nullptr) 
+	srand(time(nullptr));
+	UBinaryTree* Tree = new UBinaryTree;
+	for (int i = 0; i < 100; i++)
 	{
-		InorderTree(Leaf->Left);
-		InorderTree(Leaf->Right);
-		std::cout << Leaf->Value << ",";
+		Tree->Insert(rand() % 500);
 	}
+	Tree->PrintTreeInOrder();
+	std::cout << std::endl << "Runtime= " << clock() / 1000.0 << " ms" << std::endl;
 }
 
-void BinaryTree::PreorderPrint() 
+int main()
 {
-	PreorderPrint(Root);
-	std::cout << "\n";
-}
+	std::cout << "Binary Search Tree" <<std::endl;
+ 	UBinaryTree* Tree = new UBinaryTree;
+	FNode* Root = nullptr;
+ 	std::cout << "Tree Keys: ";
+ 	Tree->TestAddValueAndTime(Root);
+	Tree->PrintTreeInOrder();
 
-void BinaryTree::PreorderPrint(Node* Leaf) 
-{
-	if (Leaf != nullptr) 
-	{
-		std::cout << Leaf->Value << ",";
-		InorderTree(Leaf->Left);
-		InorderTree(Leaf->Right);
-	}
-}
-
-int main() 
-{
-	BinaryTree* Tree = new BinaryTree();
-
-	Tree->Insert(10);
-	Tree->Insert(6);
-	Tree->Insert(14);
-	Tree->Insert(5);
-	Tree->Insert(8);
-	Tree->Insert(11);
-	Tree->Insert(18);
-
-	Tree->PreorderPrint();
-	Tree->InorderTree();
-	Tree->PostorderPrint();
-
-	delete Tree;
+	return 0;
 }
