@@ -37,7 +37,9 @@ FNode* UBinaryTree::Insert(FNode* AddNode, int Key)
 
 void UBinaryTree::Insert(int Key)
 {
+	//srand(time(nullptr));
 	Root = Insert(Root, Key);
+	//std::cout << std::endl << "Runtime= " << clock() / 1000.0 << " ms" << std::endl;
 }
 
 void UBinaryTree::PrintTreeInOrder(FNode* AddNode)
@@ -219,19 +221,33 @@ FNode* UBinaryTree::Remove(FNode* AddNode, int Key)
 
 void UBinaryTree::Remove(int Key)
 {
+	srand(time(nullptr));
 	Root = Remove(Root, Key);
+	std::cout << std::endl << "Runtime= " << clock() / 1000.0 << " ms" << std::endl;
 }
 
 void UBinaryTree::TestAddValueAndTime(FNode* Root)
 {
 	srand(time(nullptr));
 	UBinaryTree* Tree = new UBinaryTree;
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 262144; i++)
 	{
-		Tree->Insert(rand() % 500);
+		Tree->Insert(rand() % 262144);
 	}
 	Tree->PrintTreeInOrder();
 	std::cout << std::endl << "Runtime= " << clock() / 1000.0 << " ms" << std::endl;
+	Tree->Insert(1000);
+	Tree->PrintTreeInOrder();
+	std::cout << std::endl << "Runtime= " << clock() / 1000.0 << " ms" << std::endl;
+// 	Tree->Insert(1100);
+// 	Tree->PrintTreeInOrder();
+// 	std::cout << std::endl << "Runtime= " << clock() / 1000.0 << " ms" << std::endl;
+	Tree->Remove(1000);
+	Tree->PrintTreeInOrder();
+	std::cout << std::endl << "Runtime= " << clock() / 1000.0 << " ms" << std::endl;
+// 	Tree->Remove(1100);
+// 	Tree->PrintTreeInOrder();
+// 	std::cout << std::endl << "Runtime= " << clock() / 1000.0 << " ms" << std::endl;
 }
 
 int main()
@@ -241,7 +257,5 @@ int main()
 	FNode* Root = nullptr;
  	std::cout << "Tree Keys: ";
  	Tree->TestAddValueAndTime(Root);
-	Tree->PrintTreeInOrder();
-
 	return 0;
 }
